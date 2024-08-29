@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+.venv/
+venv/
+ENV/
+env/
+.env
+.venv
+Pipfile
+Pipfile.lock
+pyvenv.cfg
+
+# IntelliJ IDEA
+.idea/
+
+# Log files
+*.log

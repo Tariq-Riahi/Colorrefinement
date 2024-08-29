@@ -1,16 +1,28 @@
-from collections import Counter
-
 from graph import *
-import time
 
 
 # give all the vertices a color based on the amount of neighbours
 def initial_coloring(G: Graph):
+    """
+        Assigns an initial color to each vertex in the graph based on the number of its neighbors.
+
+        Parameters:
+        G (Graph): The graph whose vertices are to be colored.
+    """
     for i in range(len(G)):
         G.vertices[i].color = G.vertices[i].count_neighbours()
 
 
 def max_color(G: Graph):
+    """
+        Finds the maximum color value currently assigned to any vertex in the graph.
+
+        Parameters:
+        G (Graph): The graph whose vertices are being analyzed.
+
+        Returns:
+        int: The maximum color value in the graph.
+    """
     res = 0
     for i in range(len(G)):
         res = max(res, G.vertices[i].color)
@@ -18,6 +30,15 @@ def max_color(G: Graph):
 
 
 def color_vectors(G: Graph):
+    """
+        Creates a dictionary mapping each color to the list of vertices that have that color.
+
+        Parameters:
+        G (Graph): The graph to be analyzed.
+
+        Returns:
+        dict: A dictionary where keys are colors and values are lists of vertices.
+    """
     res = {}
     for i in range(len(G)):
         if G.vertices[i].color in res:
@@ -30,6 +51,16 @@ def color_vectors(G: Graph):
 
 
 def refine(G1: Graph, G2: Graph):
+    """
+        Refines the color classes of two graphs and checks if they are isomorphic.
+
+        Parameters:
+        G1 (Graph): The first graph to be compared.
+        G2 (Graph): The second graph to be compared.
+
+        Returns:
+        bool: True if the graphs are isomorphic, False otherwise.
+    """
     initial_coloring(G1)
     initial_coloring(G2)
 
@@ -37,10 +68,8 @@ def refine(G1: Graph, G2: Graph):
     cv2 = color_vectors(G2)
 
     new_color = max_color(G1)
-
-    nh_color = {}
-
     changes = True
+
     while changes:
         changes = False
 
@@ -61,34 +90,20 @@ def refine(G1: Graph, G2: Graph):
                     break
 
             if changed:
-                tbc1 = []
-                for j in range(len(sc1)):
-                    vertex2 = sc1[j]
-                    if vertex2 != vertex1:
-                        nh2 = vertex2.color_neighbours()
-                        nh2.sort()
-                        if nh1 == nh2:
-                            tbc1.append(vertex2)
-                    else:
-                        tbc1.append(vertex1)
+                # Collect vertices with the same neighborhood structure
+                tbc1 = [vertex2 for vertex2 in sc1 if (sorted(vertex2.color_neighbours()) == nh1 and vertex2 != vertex1)] + \
+                       [vertex1]
 
-                tbc2 = []
+                # Collect vertices with the same neighborhood structure in the second graph
                 sc2 = cv2[vertex1.color]
-                if len(sc1) != len(sc2):
-                    print("dfq is this")
-                for j in range(len(sc2)):
-                    vertex2 = sc2[j]
-                    nh2 = vertex2.color_neighbours()
-                    nh2.sort()
-                    if nh1 == nh2:
-                        tbc2.append(vertex2)
+                tbc2 = [vertex2 for vertex2 in sc2 if (sorted(vertex2.color_neighbours()) == nh1 and vertex2 != vertex1)]
 
                 if len(tbc1) != len(tbc2):
                     return False
 
                 new_color += 1
-                for j in range(len(tbc1)):
-                    vertex = tbc1[j]
+
+                for vertex in tbc1:
                     cv1[vertex.color].remove(vertex)
                     vertex.color = new_color
                     if new_color in cv1:
@@ -96,8 +111,7 @@ def refine(G1: Graph, G2: Graph):
                     else:
                         cv1[new_color] = [vertex]
 
-                for j in range(len(tbc2)):
-                    vertex = tbc2[j]
+                for vertex in tbc2:
                     cv2[vertex.color].remove(vertex)
                     vertex.color = new_color
                     if new_color in cv2:

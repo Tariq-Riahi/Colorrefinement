@@ -1,38 +1,40 @@
-from graph import *
 from graph_io import *
-from colouring import *
+from coloring import *
 import time
 
+# List of test graph files to be processed
 TEST_FILES = [
-    "SignOffColRefFri1.grl",
-    "SignOffColRefFri2.grl",
-    "SignOffColRefFri3.grl",
-    "SignOffColRefFri4.grl",
-    "SignOffColRefFri5.grl",
-    "SignOffColRefFri6.grl",
-    # "colorref_largeexample_4_1026.grl", "colorref_largeexample_6_960.grl"
-    # "colorref_smallexample_2_49.grl", "colorref_smallexample_4_7.grl",
-    # "colorref_smallexample_4_16.grl" , "colorref_smallexample_6_15.grl",
-    # "cref9vert3comp_10_27.grl",
-    # "cref9vert_4_9.grl"
+    "Test1.grl",
+    "Test2.grl",
+    "Test3.grl",
+    "Test4.grl",
+    "Test5.grl",
+    "Test6.grl",
 ]
+
+# Record the start time of the script
 start_time = time.time()
+
+# Loop through each file in the list
 for file_name in TEST_FILES:
-    with open('SignOff/' + file_name, 'r') as file:
+    with open('data/' + file_name, 'r') as file:
         graph_list, options = load_graph(file, read_list=True)
 
         print(file_name)
         print('Sets of possibly isomorphic graphs:')
 
+        # Keeps track of paired graphs
         paired_graphs = []
 
         for i in range(len(graph_list)):
             if i not in paired_graphs:
                 g1 = graph_list[i]
                 x = [i]
+                res = None
                 for j in range(len(graph_list)):
                     if i != j:
                         g2 = graph_list[j]
+                        # Check if the two graphs are isomorphic
                         if refine(g1, g2):
                             x.append(j)
                             paired_graphs.append(j)
@@ -42,4 +44,6 @@ for file_name in TEST_FILES:
                                 res = x
                 print(res)
     print()
+
+# Print the total execution time
 print(time.time() - start_time)
