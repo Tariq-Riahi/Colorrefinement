@@ -1,0 +1,176 @@
+from collections import Counter
+
+from graph import *
+import time
+
+
+# give all the vertices a color based on the amount of neighbours
+def initial_coloring(G: Graph):
+    for i in range(len(G)):
+        G.vertices[i].color = G.vertices[i].count_neighbours()
+
+
+def max_color(G: Graph):
+    res = 0
+    for i in range(len(G)):
+        res = max(res, G.vertices[i].color)
+    return res
+
+
+def color_vectors(G: Graph):
+    res = {}
+    for i in range(len(G)):
+        if G.vertices[i].color in res:
+            temp = res[G.vertices[i].color]
+            temp.append(G.vertices[i])
+            res[G.vertices[i].color] = temp
+        else:
+            res[G.vertices[i].color] = [G.vertices[i]]
+    return res
+
+
+def refine(G: Graph):
+    initial_coloring(G)
+
+    cv = color_vectors(G)
+    # the current highest color
+    mc = max_color(G)
+
+    vrt = G.vertices
+
+    finished = False
+
+    while not finished:
+        finished = True
+        changed_vertices = []
+
+        for i in range(len(G)):
+            vertex1 = vrt[i]
+            if True: #vertex1 not in changed_vertices:
+                c = vertex1.color
+                nc1 = vertex1.color_neighbours()
+                nc1.sort()
+                changed = False
+
+                # List of vertices with the same color
+                sc = cv[G.vertices[i].color]
+                for j in range(len(sc)):
+                    vertex2 = sc[j]
+                    if vertex1 != vertex2:
+                        nc2 = vertex2.color_neighbours()
+                        nc2.sort()
+                        if nc1 != nc2:
+                            finished = False
+                            changed = True
+                            break
+
+                if changed:
+                    # List of vertices to be changed
+                    tbc = []
+                    for j in range(len(sc)):
+                        vertex2 = sc[j]
+                        if vertex1 != vertex2:
+                            nc2 = vertex2.color_neighbours()
+                            nc2.sort()
+                            if nc1 == nc2:
+                                tbc.append(vertex2)
+                                changed_vertices.append(vertex2)
+
+                    mc += 1
+
+                    cv[vertex1.color].remove(vertex1)
+                    vertex1.color = mc
+
+                    if vertex1.color in cv:
+                        cv[vertex1.color].append(vertex1)
+                    else:
+                        cv[vertex1.color] = [vertex1]
+                    for j in range(len(tbc)):
+                        cv[tbc[j].color].remove(tbc[j])
+
+                        tbc[j].color = mc
+
+                        cv[tbc[j].color].append(tbc[j])
+
+def refine2(G1: Graph, G2: Graph):
+    initial_coloring(G1)
+    initial_coloring(G2)
+
+    # Dictionary with a color as the key and a list of vertices as the result
+    cv1 = color_vectors(G1)
+    cv2 = color_vectors(G2)
+
+    # The current highest color
+    mc = max_color(G1)
+
+    finished = False
+
+    while not finished:
+        finished = True
+
+        for i in range (len(G1)):
+            vertex1 = G1.vertices[i]
+            c = vertex1.color
+            nc1 = vertex1.color_neighbours()
+            nc1.sort()
+
+            changed = False
+
+            # List of vertices with the same color
+            sc1 = cv1[c]
+            sc2 = cv2[c]
+
+            if i == 0:
+                print(len(sc2), len(sc1))
+            for j in range(len(sc1)):
+                vertex2 = sc1[j]
+                if vertex1 != vertex2:
+                    nc2 = vertex2.color_neighbours()
+                    nc2.sort()
+                    if nc1 != nc2:
+                        finished = False
+                        changed = True
+                        break
+
+            if changed:
+                # List of vertices to be changed
+                tbc1 = []
+                tbc2 = []
+                for j in range(len(sc1)):
+                    vertex2 = sc1[j]
+                    if vertex1 != vertex2:
+                        nc2 = vertex2.color_neighbours()
+                        nc2.sort()
+                        if nc1 == nc2:
+                            tbc1.append(vertex2)
+
+
+                for j in range(len(sc2)):
+                    vertex2 = sc2[j]
+                    nc2 = vertex2.color_neighbours()
+                    nc2.sort()
+                    if nc1 == nc2:
+                        tbc2.append(vertex2)
+
+            mc += 1
+
+            cv1[c].remove(vertex1)
+            vertex1.color = mc
+
+            if mc in cv1:
+                cv1[vertex1.color].append(vertex1)
+            else:
+                cv1[mc] = [vertex1]
+
+            for j in range(len(tbc1)):
+                cv1[tbc1[j].color].remove(tbc1[j])
+                tbc1[j].color = mc
+                cv1[mc].append(tbc1[j])
+
+            for j in range(len(tbc2)):
+                cv2[tbc2[j].color].remove(tbc2[j])
+                tbc2[j].color = mc
+                if mc in cv2:
+                    cv2[mc].append(tbc2[j])
+                else:
+                    cv2[mc] = [tbc2[j]]
